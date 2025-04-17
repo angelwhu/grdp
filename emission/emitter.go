@@ -199,8 +199,13 @@ func (emitter *Emitter) callListeners(listeners []reflect.Value, event interface
 
 	for _, fn := range listeners {
 		go func(fn reflect.Value) {
-			defer wg.Done()
-
+			defer func() {
+				wg.Done()
+				if e := recover(); e != nil {
+					fmt.Printf("Grdp CallListeners => Runtime panic caught: %v\n", e)
+					emitter.Emit("error", e)
+				}
+			}()
 			// Recover from potential panics, supplying them to a
 			// RecoveryListener if one has been set, else allowing
 			// the panic to occur.
