@@ -197,24 +197,30 @@ func (emitter *Emitter) callListeners(listeners []reflect.Value, event interface
 
 	wg.Add(len(listeners))
 
-	var mu sync.Mutex
+	//var mu sync.Mutex
 	for _, fn := range listeners {
 		go func(fn reflect.Value) {
 			defer func() {
 				wg.Done()
-				if e := recover(); e != nil {
-					fmt.Printf("Grdp CallListeners => Runtime panic caught: %v\n", e)
-					mu.Lock()
-					emitter.Emit("error", e)
-					mu.Unlock()
-				}
+				//if e := recover(); e != nil {
+				//	fmt.Printf("Grdp CallListeners => Runtime panic caught: %v\n", e)
+				//	mu.Lock()
+				//	emitter.Emit("error", e)
+				//	mu.Unlock()
+				//}
 			}()
 			// Recover from potential panics, supplying them to a
 			// RecoveryListener if one has been set, else allowing
 			// the panic to occur.
+
+			// example:
+			// e.RecoverWith(func(event interface{}, listener interface{}, err error) {
+			//		fmt.Printf("event:%v ==> listener:%v ==> err:%v", event, listener, err)
+			// })
 			if nil != emitter.recoverer {
 				defer func() {
 					if r := recover(); nil != r {
+						fmt.Printf("Grdp CallListeners => Runtime panic caught: %v\n", r)
 						err := fmt.Errorf("%v", r)
 						emitter.recoverer(event, fn.Interface(), err)
 					}
