@@ -162,6 +162,13 @@ func (t *TPKT) SendFastPath(secFlag byte, data []byte) (n int, err error) {
 }
 
 func (t *TPKT) recvHeader(s []byte, err error) {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Printf("TPKT recvFastPath => Runtime panic caught: %v\n", err)
+			t.Emit("error", err)
+		}
+	}()
+
 	glog.Debug("tpkt recvHeader", hex.EncodeToString(s), err)
 	if err != nil {
 		t.Emit("error", err)

@@ -8,6 +8,19 @@ import (
 type ReadBytesComplete func(result []byte, err error)
 
 func StartReadBytes(len int, r io.Reader, cb ReadBytesComplete) {
+	// fix bug ~
+	//panic: runtime error: makeslice: len out of range
+	//goroutine 9147605 [running]:
+	//github.com/tomatome/grdp/core.StartReadBytes(0xfffffffffffffffe, {0x12a4760, 0xc006cc9410}, 0xc0074e0370)
+	//if len <= 0 {
+	//	len = 2
+	//}
+	//defer func() {
+	//	if err := recover(); err != nil {
+	//		fmt.Printf("grpc.core len=>%d StartReadBytes => Runtime panic caught: %v\n", len, err)
+	//	}
+	//}()
+
 	b := make([]byte, len)
 	go func() {
 		_, err := io.ReadFull(r, b)
@@ -129,4 +142,3 @@ func RGB565ToRGB(data uint16) (r, g, b uint8) {
 
 	return
 }
-
